@@ -1,4 +1,3 @@
-
 import java.applet.AudioClip;
 import java.awt.Color;
 import java.awt.Font;
@@ -409,7 +408,7 @@ import javax.swing.JPanel;
 						bugY--;
 					
 				}
-				disturb(bugX, bugY);
+				disturb(bugX+12, bugY+12);
 				if(hp <= 0)
 				{
 					currentState = STATE.WIN_LOSE;
