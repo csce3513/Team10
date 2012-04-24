@@ -27,17 +27,16 @@ import javax.swing.JPanel;
 {
 	 
 	 public enum STATE {
-		 	SPLASH(1), START_OPTION(2), LEFT_RIGHT(3), GAME(4), OPTION_MENU(5), CHOOSE_LEVEL(6), CHOOSE_HAND(7), CHOOSE_DIF(8);
-		 	private int VALUE;
-		 	
-		 	private STATE (int value) {
-		 		this.VALUE = value;
-		 		
+		 	SPLASH(1), START_OPTION(2), LEFT_RIGHT(3), GAME(4), OPTION_MENU(5), CHOOSE_LEVEL(6), CHOOSE_HAND(7), CHOOSE_DIF(8), WIN_LOSE(9);
+		 	private int VALUE;	 	
+		 	private STATE (int value) 
+		 	{
+		 		this.VALUE = value;		 		
 		 	}
 	 };
 	
-	 private STATE currentState = STATE.SPLASH;
-	 int state = 0;
+	private STATE currentState = STATE.SPLASH;
+	int state = 0;
 	int start_button_status = 2;
 	int option_button_status = 4;
 	int lefthand_button_status = 6;
@@ -58,25 +57,27 @@ import javax.swing.JPanel;
 	
 	int bg_image_sel_status = 34;
 	
+	int fg_image_sel_status = 39;
+	
+	int win_lose_status = 41;
+	
 	int imgX, imgY;
 	int bugX = 190, bugY = 300;
 	int x,y;
 	boolean button_activator = false;
 	Thread startthread = new StartThread();
+	boolean threadstart = false;
 	boolean hand = false;	// right hand = false, left hand = true;
 	Image[] images;
 	Image testIMG;
 	AudioClip startingMusic;
-	private Vector vc = new Vector();
-	
 	// <============================================== > //
-	
-	private int speed = 30; //speed of thread
+
 	private int bugspeed = 5;
     private int mousex;
     private int mousey;
     private int radius;
-    private int hp = 100;
+    private int hp = 50;
     Graphics G;
     
     private Shape shape1, shape2;
@@ -88,7 +89,6 @@ import javax.swing.JPanel;
         
     //private Dimension size; //used to set the size of applet
     Random randomGenerator = new Random(); //generator for color, position, & speed
-	Thread th = new GameThread(); // thread
 	Thread bugthread = new BugThread();
 	
 	// <=============== Ripple Water ================> //
@@ -106,6 +106,18 @@ import javax.swing.JPanel;
     int oldind,newind,mapind;
     int riprad;
     Thread ripwater = new RippleWater();
+    
+    // <============== Timer =====================> //
+    double m_index = 0.0;
+    public Thread CustomizedTimer = new CustomizedTimer();
+    boolean win = false;
+    
+    // <============== Win&Lose ====================> //
+    Thread win_lose = new Win_Lose();
+    boolean b_win_lose = true;
+    
+    // <============== Game Over ===================> //
+    boolean gameover = false;
     
     public void ripplewaterinit(Image bg_image)
     {
@@ -125,7 +137,6 @@ import javax.swing.JPanel;
         oldind = width;
         newind = width * (height+3);
         
-        System.out.println(bg_image);
         PixelGrabber pg = new PixelGrabber(bg_image,0,0,width,height,texture,0,width);
         try {
           pg.grabPixels();
@@ -246,52 +257,57 @@ import javax.swing.JPanel;
 		
 		else if(currentState == STATE.GAME)
 		{
-			 Graphics2D g2 = (Graphics2D) g;
-	         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	         shape1 = new Ellipse2D.Double(90, 275, 200, 325);
-	         shape2 = new Ellipse2D.Double(98, 290, 185, 300);
-            
-	         //areaOne = new Area(shape1);
-	         test = new Area(shape1);
-	         areaTwo = new Area(shape2);
-	         
-	        
-	         
-	         g.drawImage(offImage,0,0,this);
-	         g.drawImage(images[39],0,0,this);
+            g.drawImage(offImage,0,0,this);
+	        g.drawImage(images[bg_image_sel_status+5],0,0,this);
 
-	         if (areaTwo.contains(mousex, mousey)) {
-	         if(radius %2 == 1)
-	         g2.setColor(Color.yellow);
-	         //g.fillOval(getMouseX()-radius/2, getMouseY()-radius/2, radius, radius);
-	         }
-	         else {
-
-	         }
+	        g.drawImage(images[11],bugX,bugY,this);
+	        g.setColor(Color.red);
+	        g.setFont(new Font("MV Boli", Font.BOLD+Font.ITALIC, 30));
+	        g.drawString("HP:"+hp,250, 40);
 	         
-	         g.drawImage(images[11],bugX,bugY,this);
-	         g.setColor(Color.red);
-	         g.setFont(new Font("MV Boli", Font.BOLD+Font.ITALIC, 30));
-	         g.drawString("HP:"+hp,250, 40);
-	         
-	         g2.setColor(Color.lightGray);
-	         test.subtract(areaTwo);
-
-	         //g2.draw(areaOne);
-	         //g2.draw(areaTwo);
-	         g2.setColor(Color.white);
-	         g2.fill(test);
-	         
-		}
+	        g.drawRect(15, 20, 35, 550);
+	        g.setColor(Color.yellow);
+	        if(m_index > 6 && m_index < 8) g.setColor(Color.orange);
+	        else if(m_index > 8) g.setColor(Color.red);
+	        g.fillRect(16, 19, 36, (int)(550-(19+((530/10))*m_index)));
+	 	}
 		
+		else if(currentState == STATE.WIN_LOSE)
+		{
+			if(b_win_lose) g.drawImage(images[win_lose_status],0,0,this);
+			else g.drawImage(images[win_lose_status+1],0,0,this);
+		}
+	}
+	
+	public void inc_time()
+	{
+		m_index = (m_index + 0.1);
+	}
+	
+	class Win_Lose extends Thread
+	{
+		public void run()
+		{			
+			while(true)
+			{
+				if(currentState == STATE.WIN_LOSE)
+				{
+					System.out.println(bg_image_sel_status);
+					try { Thread.sleep(3000); } 
+					catch (InterruptedException e) {}
+					if(gameover) { currentState = STATE.SPLASH; gameover = false; }
+					else if(b_win_lose) currentState = STATE.GAME;					
+					else currentState = STATE.SPLASH;
+					repaint();
+					
+				}
+			}
+
+		}
 	}
 	
 	class RippleWater extends Thread
 	{
-		RippleWater()
-		{
-			super("RippleWater");			
-		}
 		public void run()
 		{
 		  while (true) 
@@ -304,64 +320,71 @@ import javax.swing.JPanel;
 		}
 	}
 	
-	class StartThread extends Thread{
-		
-		StartThread()
-		{
-			super("StartThread");
-		}
-		
+	class CustomizedTimer extends Thread
+	{
 		public void run()
 		{
-			System.out.println("playmusic");
-			startingMusic.play();
 			
 			while(true)
-			{
-				if(currentState != STATE.START_OPTION){
-				try { Thread.sleep(1900); } 
-				catch (InterruptedException e) {}
-				currentState = STATE.START_OPTION;
-				repaint();
+			{	
+				if(currentState == STATE.GAME)
+					inc_time();
+				if(m_index > 10)
+				{					
+					m_index = 0;
+					hp = 50;
+					currentState = STATE.WIN_LOSE;
+					b_win_lose = false;
+				}
+				else
+				{
+					if(bg_image_sel_status == 34)
+					{
+						try { Thread.sleep(100); } 
+						catch (InterruptedException e) {}
+					}
+					else
+					{
+						try { Thread.sleep(30); } 
+						catch (InterruptedException e) {}
+					}	
 				}
 			}
 		}
+		
 	}
 	
-	class GameThread extends Thread{
-		
-		GameThread()
-		{
-			super("GameThread");
-		}
+	class StartThread extends Thread{
 		
 		public void run()
-		{
+		{			
+			startingMusic.loop();
 			while(true)
 			{
-				try { Thread.sleep(speed);  } 
-				catch (InterruptedException e) {}
-				//updateColor();
+				if(currentState == STATE.SPLASH)
+				{
+					try { Thread.sleep(1900); } 
+					catch (InterruptedException e) {}
+					currentState = STATE.START_OPTION;
+					repaint();
+				}
 			}
 		}
+		
 	}
+	
 	
 	class BugThread extends Thread{
 		
 		int ranX = 190;
 		int ranY = 300;
-		
-		BugThread()
-		{
-			super("BugThread");
-		}
-		
 
 		public void run()
 		{
+			int a = 0;
+			
 			while(true)
 			{
-
 				if(ranX == bugX && ranY == bugY) {
 				
 					ranX = 100 + randomGenerator.nextInt(175);
@@ -387,16 +410,31 @@ import javax.swing.JPanel;
 					
 				}
 				disturb(bugX, bugY);
-				if(hp == 0)
+				if(hp <= 0)
 				{
-					currentState = STATE.START_OPTION;
+					currentState = STATE.WIN_LOSE;
+					b_win_lose = true;
+					if(bg_image_sel_status == 34)
+					{
+						bg_image_sel_status++;
+					}
+					else
+					{
+						gameover = true;
+					}
+					hp = 50;
+					m_index = 0;
+					try { Thread.sleep(300);  } 
+					catch (InterruptedException e) {}
 					repaint();
-					break;
 				}
+
 				try { Thread.sleep(bugspeed);  } 
 				catch (InterruptedException e) {}
 				repaint();
 			}
+			
+
 		}
 
 	}
@@ -413,10 +451,16 @@ import javax.swing.JPanel;
 			if(x >= 154 && x <= 220 && y >= 190 && y <= 263) {
 					currentState = STATE.GAME;	// game start;
 					repaint();
+					
 					ripplewaterinit(images[bg_image_status]);
-					th.start();
+					if (!threadstart)
+					{
+					CustomizedTimer.start();
 					bugthread.start();
 					ripwater.start();
+					win_lose.start();
+					threadstart = true;
+					}
 					
 					
 				}
@@ -515,8 +559,15 @@ import javax.swing.JPanel;
 			}
 			else if(x >= 70 && x <= 311 && y >= 51 && y <= 441) 
 			{
-				currentState = STATE.START_OPTION;
-				repaint();
+				if(bg_image_sel_status >= 36)
+				{
+					;
+				}
+				else
+				{
+					currentState = STATE.START_OPTION;
+					repaint();
+				}
 			}
 		}
 
@@ -725,11 +776,7 @@ import javax.swing.JPanel;
 	        if(m.getX() >= bugX && m.getX() <= bugX+24 && m.getY() >= bugY && m.getY() <= bugY+24 )
 	        {
 	        	hp--;
-	        	//System.out.println(hp);
 	        }
-	        DrawInfo di = new DrawInfo(x,y,radius,Color.YELLOW);
-	        vc.add(di);
-			
 		}
 	}
 	

@@ -45,7 +45,7 @@ public class MenuSystem extends JApplet{
 		images[24] = getToolkit().getImage("images/hard_b.png");
 		
 		images[25] = getToolkit().getImage("images/bg1.jpg");
-		images[26] = getToolkit().getImage("images/bg2.jpg");
+		images[26] = getToolkit().getImage("images/bg2.png");
 		images[27] = getToolkit().getImage("images/bg3.jpg");
 		images[28] = getToolkit().getImage("images/bg4.jpg");
 		images[29] = getToolkit().getImage("images/bg5.jpg");
@@ -56,14 +56,20 @@ public class MenuSystem extends JApplet{
 		images[33] = getToolkit().getImage("images/double_arrow_button_r_b.png");
 		
 		images[34] = getToolkit().getImage("images/bg1_s.jpg");
-		images[35] = getToolkit().getImage("images/bg2_s.jpg");
+		images[35] = getToolkit().getImage("images/bg2_s.png");
 		images[36] = getToolkit().getImage("images/bg3_s.jpg");
 		images[37] = getToolkit().getImage("images/bg4_s.jpg");
 		images[38] = getToolkit().getImage("images/bg5_s.jpg");
 		
 		images[39] = getToolkit().getImage("images/bg1.png");
+		images[40] = getToolkit().getImage("images/fg2.png");
 		
-		startingMusic = getAudioClip(getDocumentBase(), "startingMusic.wav");
+		images[41] = getToolkit().getImage("images/youwin.png");
+		images[42] = getToolkit().getImage("images/youlose.png");
+		
+		System.out.println(getDocumentBase());
+		
+		startingMusic = getAudioClip(getDocumentBase(), "themesong.au");
 		
 		drawSurface = new DrawSurface(images,startingMusic);
 		content_pane.add(drawSurface);
