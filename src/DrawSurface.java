@@ -3,22 +3,16 @@ import java.applet.AudioClip;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.geom.Area;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
 import java.util.Random;
-import java.util.Vector;
 
 import javax.swing.JPanel;
 
@@ -27,39 +21,41 @@ import javax.swing.JPanel;
 {
 	 
 	 public enum STATE {
-		 	SPLASH(1), START_OPTION(2), LEFT_RIGHT(3), GAME(4), OPTION_MENU(5), CHOOSE_LEVEL(6), CHOOSE_HAND(7), CHOOSE_DIF(8), WIN_LOSE(9);
-		 	private int VALUE;	 	
-		 	private STATE (int value) 
+		 	SPLASH(1), START_OPTION(2), LEFT_RIGHT(3), GAME(4), OPTION_MENU(5), CHOOSE_LEVEL(6), CHOOSE_HAND(7), CHOOSE_DIF(8), WIN_LOSE(9); 	
+		 	private int VALUE;
+			private STATE (int value) 
 		 	{
 		 		this.VALUE = value;		 		
 		 	}
+			public int getState(){
+				return this.VALUE;
+			}
 	 };
 	
 	private STATE currentState = STATE.SPLASH;
-	int state = 0;
 	int start_button_status = 2;
 	int option_button_status = 4;
 	int lefthand_button_status = 6;
 	int righthand_button_status = 7;
 	
-	int toilets_button_status = 13;
-	int hand_preference_button_status = 15;
-	int difficulty_button_status = 17;
+	int toilets_button_status = 12;
+	int hand_preference_button_status = 14;
+	int difficulty_button_status = 16;
 	
-	int easy_button_status = 19;
-	int medium_button_status = 21;
-	int hard_button_status = 23;
+	int easy_button_status = 18;
+	int medium_button_status = 20;
+	int hard_button_status = 22;
 	
-	int bg_image_status = 25;
+	int bg_image_status = 24;
 	
-	int arrow_button_left_status = 30;
-	int arrow_button_right_status = 31;
+	int arrow_button_left_status = 29;
+	int arrow_button_right_status = 30;
 	
-	int bg_image_sel_status = 34;
+	int bg_image_sel_status = 33;
 	
-	int fg_image_sel_status = 39;
+	int fg_image_sel_status = 38;
 	
-	int win_lose_status = 41;
+	int win_lose_status = 40;
 	
 	int imgX, imgY;
 	int bugX = 190, bugY = 300;
@@ -69,19 +65,14 @@ import javax.swing.JPanel;
 	boolean threadstart = false;
 	boolean hand = false;	// right hand = false, left hand = true;
 	Image[] images;
-	Image testIMG;
 	AudioClip startingMusic;
 	// <============================================== > //
 
 	private int bugspeed = 5;
     private int mousex;
     private int mousey;
-    private int radius;
     private int hp = 50;
     Graphics G;
-    
-    private Shape shape1, shape2;
-    private Area areaTwo, test;
      
     static final int X = 380, Y = 250;
     static BufferedImage I;
@@ -108,8 +99,8 @@ import javax.swing.JPanel;
     Thread ripwater = new RippleWater();
     
     // <============== Timer =====================> //
-    double m_index = 0.0;
-    public Thread CustomizedTimer = new CustomizedTimer();
+    private double M_INDEX = 0;
+    public Thread Pissometer = new Pissometer();
     boolean win = false;
     
     // <============== Win&Lose ====================> //
@@ -205,7 +196,7 @@ import javax.swing.JPanel;
 		this.startingMusic = startingMusic;
 		startthread.start();
 	}
-	
+
 	public void paintComponent(Graphics g) {
 		super.paintComponents(g);
 		if(currentState == STATE.SPLASH)	// Draw splash image
@@ -267,9 +258,9 @@ import javax.swing.JPanel;
 	         
 	        g.drawRect(15, 20, 35, 550);
 	        g.setColor(Color.yellow);
-	        if(m_index > 6 && m_index < 8) g.setColor(Color.orange);
-	        else if(m_index > 8) g.setColor(Color.red);
-	        g.fillRect(16, 19, 36, (int)(550-(19+((530/10))*m_index)));
+	        if(M_INDEX > 6 && M_INDEX < 8) g.setColor(Color.orange);
+	        else if(M_INDEX > 8) g.setColor(Color.red);
+	        g.fillRect(16, 19, 36, (int)(550-(19+((530/10))*M_INDEX)));
 	 	}
 		
 		else if(currentState == STATE.WIN_LOSE)
@@ -279,9 +270,32 @@ import javax.swing.JPanel;
 		}
 	}
 	
+	public void setSTATE(STATE state) {
+		currentState = state;
+	}
+	public STATE getSTATE() {
+		return currentState;
+	}
+	
+	public int getHp() {
+		return hp;
+	}
+
+	public void setHp(int hp) {
+		this.hp = hp;
+	}
+
 	public void inc_time()
 	{
-		m_index = (m_index + 0.1);
+		M_INDEX = (M_INDEX + 0.1);
+	}
+	
+	public void setM_INDEX(double m_index){
+		M_INDEX = m_index;
+	}
+	
+	public double getM_INDEX(){
+		return M_INDEX;
 	}
 	
 	class Win_Lose extends Thread
@@ -320,7 +334,7 @@ import javax.swing.JPanel;
 		}
 	}
 	
-	class CustomizedTimer extends Thread
+	class Pissometer extends Thread
 	{
 		public void run()
 		{
@@ -329,9 +343,9 @@ import javax.swing.JPanel;
 			{	
 				if(currentState == STATE.GAME)
 					inc_time();
-				if(m_index > 10)
+				if(M_INDEX > 10)
 				{					
-					m_index = 0;
+					M_INDEX = 0;
 					hp = 50;
 					currentState = STATE.WIN_LOSE;
 					b_win_lose = false;
@@ -358,7 +372,7 @@ import javax.swing.JPanel;
 		
 		public void run()
 		{			
-			startingMusic.loop();
+			//startingMusic.loop();
 			while(true)
 			{
 				if(currentState == STATE.SPLASH)
@@ -374,21 +388,21 @@ import javax.swing.JPanel;
 	}
 	
 	
-	class BugThread extends Thread{
+	public class BugThread extends Thread{
 		
 		int ranX = 190;
 		int ranY = 300;
 
 		public void run()
 		{
-			int a = 0;
+
 			
 			while(true)
 			{
 				if(ranX == bugX && ranY == bugY) {
 				
-					ranX = 100 + randomGenerator.nextInt(175);
-					ranY = 275 + randomGenerator.nextInt(250);
+					//ranX = 100 + randomGenerator.nextInt(175);
+					//anY = 275 + randomGenerator.nextInt(250);
 					
 					
 				}
@@ -409,7 +423,7 @@ import javax.swing.JPanel;
 						bugY--;
 					
 				}
-				disturb(bugX, bugY);
+				disturb(bugX+12, bugY+12);
 				if(hp <= 0)
 				{
 					currentState = STATE.WIN_LOSE;
@@ -423,7 +437,7 @@ import javax.swing.JPanel;
 						gameover = true;
 					}
 					hp = 50;
-					m_index = 0;
+					M_INDEX = 0;
 					try { Thread.sleep(300);  } 
 					catch (InterruptedException e) {}
 					repaint();
@@ -455,7 +469,7 @@ import javax.swing.JPanel;
 					ripplewaterinit(images[bg_image_status]);
 					if (!threadstart)
 					{
-					CustomizedTimer.start();
+					Pissometer.start();
 					bugthread.start();
 					ripwater.start();
 					win_lose.start();
@@ -770,12 +784,10 @@ import javax.swing.JPanel;
 			disturb(m.getX(),m.getY());
 	        setMouseX(m.getX());
 	        setMouseY(m.getY()); 
-	        if (radius > 10)
-	            radius--;
 	        
 	        if(m.getX() >= bugX && m.getX() <= bugX+24 && m.getY() >= bugY && m.getY() <= bugY+24 )
 	        {
-	        	hp--;
+	        	setHp(hp = hp - 1);
 	        }
 		}
 	}
